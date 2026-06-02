@@ -1,133 +1,199 @@
 import socket
-import sys
+import requests
+import whois
+import dns.resolver
 
-sys.stdout.reconfigure(encoding="utf-8")
-
-
-def ip_lookup():
+def dns_lookup():
     print("\n[ DNS Lookup ]")
-
-    target = input("Domain: ").strip()
-
-    try:
-        ip = socket.gethostbyname(target)
-
-        print(f"\nIP Address : {ip}")
-
-        try:
-            host = socket.gethostbyaddr(ip)
-            print(f"Host       : {host[0]}")
-        except socket.error:
-            print("Host       : Not Found")
-
-    except socket.gaierror:
-        print("Could not resolve domain")
-
-
-def subdomain_scanner():
-    print("\n[ Subdomain Scan ]")
 
     domain = input("Domain: ").strip()
 
-    subs = [
+    try:
+        ip = socket.gethostbyname(domain)
+        print(f"\nIP Address: {ip}")
+
+        try:
+            host = socket.gethostbyaddr(ip)
+            print(f"Hostname: {host[0]}")
+        except:
+            print("Hostname: Not Found")
+
+    except:
+        print("Could not resolve domain")
+
+
+def whois_lookup():
+    print("\n[ WHOIS Lookup ]")
+
+    domain = input("Domain: ").strip()
+
+    try:
+        data = whois.whois(domain)
+
+        print(f"\nDomain: {domain}")
+        print(f"Registrar: {data.registrar}")
+        print(f"Created: {data.creation_date}")
+        print(f"Expires: {data.expiration_date}")
+
+    except:
+        print("WHOIS lookup failed")
+
+
+def dns_records():
+    print("\n[ DNS Records ]")
+
+    domain = input("Domain: ").strip()
+
+    records = ["A", "MX", "NS", "TXT"]
+
+    for record in records:
+        try:
+            print(f"\n{record} Records:")
+
+            answers = dns.resolver.resolve(domain, record)
+
+            for answer in answers:
+                print(answer)
+
+        except:
+            print(f"No {record} records found")
+
+
+def headers_lookup():
+    print("\n[ HTTP Headers ]")
+
+    url = input("URL (https://example.com): ").strip()
+
+    try:
+        r = requests.get(url, timeout=5)
+
+        print()
+
+        for key, value in r.headers.items():
+            print(f"{key}: {value}")
+
+    except:
+        print("Request failed")
+
+
+def robots_check():
+    print("\n[ robots.txt ]")
+
+    domain = input("Domain: ").strip()
+
+    url = f"https://{domain}/robots.txt"
+
+    try:
+        r = requests.get(url, timeout=5)
+
+        print("\n" + r.text)
+
+    except:
+        print("Could not fetch robots.txt")
+
+
+def sitemap_check():
+    print("\n[ sitemap.xml ]")
+
+    domain = input("Domain: ").strip()
+
+    url = f"https://{domain}/sitemap.xml"
+
+    try:
+        r = requests.get(url, timeout=5)
+
+        print("\n" + r.text[:3000])
+
+    except:
+        print("Could not fetch sitemap.xml")
+
+
+def subdomain_check():
+    print("\n[ Subdomain Check ]")
+
+    domain = input("Domain: ").strip()
+
+    words = [
         "www",
         "mail",
         "ftp",
         "admin",
         "api",
         "dev",
-        "ssh",
-        "secure",
-        "ns1",
-        "cpanel"
+        "blog",
+        "test"
     ]
 
     found = False
 
-    print(f"\nChecking subdomains for {domain}...\n")
-
-    for sub in subs:
-        full = f"{sub}.{domain}"
+    for word in words:
+        sub = f"{word}.{domain}"
 
         try:
-            ip = socket.gethostbyname(full)
-            print(f"{full} -> {ip}")
+            ip = socket.gethostbyname(sub)
+
+            print(f"{sub} -> {ip}")
+
             found = True
 
-        except socket.gaierror:
+        except:
             pass
 
     if not found:
         print("No results")
 
 
-def quick_port_scanner():
-    print("\n[ Port Scan ]")
+while True:
 
-    target = input("Target: ").strip()
+    print(r"""
+ __   __      ____  _____ ____ ___  _   _
+ \ \ / /     |  _ \| ____/ ___/ _ \| \ | |
+  \ V / _____| |_) |  _|| |  | | | |  \| |
+   > < |_____|  _ <| |__| |__| |_| | |\  |
+  /_/ \_\    |_| \_\_____\____\___/|_| \_|
 
-    ports = [21, 22, 23, 25, 53, 80, 110, 443, 8080]
+======================================
+          X-RECON by fdq12
+======================================
 
-    try:
-        ip = socket.gethostbyname(target)
+1) DNS Lookup
+2) WHOIS Lookup
+3) DNS Records
+4) HTTP Headers
+5) robots.txt
+6) sitemap.xml
+7) Subdomain Check
+8) Exit
+""")
 
-        print(f"\nScanning {ip}\n")
+    choice = input("X-RECON > ").strip()
 
-        for port in ports:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0.8)
+    if choice == "1":
+        dns_lookup()
 
-            result = sock.connect_ex((ip, port))
+    elif choice == "2":
+        whois_lookup()
 
-            if result == 0:
-                print(f"Port {port} OPEN")
+    elif choice == "3":
+        dns_records()
 
-            sock.close()
+    elif choice == "4":
+        headers_lookup()
 
-    except socket.gaierror:
-        print("Invalid host")
+    elif choice == "5":
+        robots_check()
 
+    elif choice == "6":
+        sitemap_check()
 
-def main_menu():
-    while True:
+    elif choice == "7":
+        subdomain_check()
 
-        print(r"""
-    __   __      ____  _____ ____ ___  _   _
-    \ \ / /     |  _ \| ____/ ___/ _ \| \ | |
-     \ V / _____| |_) |  _|| |  | | | |  \| |
-      > < |_____|  _ <| |__| |__| |_| | |\  |
-     /_/ \_\    |_| \_\_____\____\___/|_| \_|
+    elif choice == "8":
+        print("\nGoodbye.\n")
+        break
 
-    ======================================
-            X-RECON by fdq12
-    ======================================
-        """)
+    else:
+        print("Invalid option")
 
-        print("1) DNS Lookup")
-        print("2) Subdomain Scan")
-        print("3) Port Scan")
-        print("4) Exit\n")
-
-        choice = input("X-RECON > ").strip()
-
-        if choice == "1":
-            ip_lookup()
-
-        elif choice == "2":
-            subdomain_scanner()
-
-        elif choice == "3":
-            quick_port_scanner()
-
-        elif choice == "4":
-            print("\nGoodbye.\n")
-            break
-
-        else:
-            print("Invalid option.")
-
-        input("\nPress Enter to continue...")
-
-
-if __name__ == "__main__":
-    main_menu()
+    input("\nPress Enter to continue...")
