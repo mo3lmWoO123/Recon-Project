@@ -18,7 +18,7 @@ Clone the repository:
 
 ```bash
 git clone https://github.com/mo3lmWoO123/Recon-Project.git
-cd X-RECON
+cd Recon-Project  
 ```
 
 Create a virtual environment:
