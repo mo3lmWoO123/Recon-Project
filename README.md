@@ -17,7 +17,7 @@ Simple information gathering tool written in Python.
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/X-RECON.git
+git clone https://github.com/mo3lmWoO123/Recon-Project.git
 cd X-RECON
 ```
 
